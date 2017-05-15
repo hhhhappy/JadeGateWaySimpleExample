@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 import jade.core.AID;
 import jade.core.Profile;
 import jade.core.behaviours.Behaviour;
@@ -61,9 +62,9 @@ public class AddNumbers extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		out.print("<h1>Addition Result</h1>");
 		out.print("The result is : <b>"+result+"</b>");*/
-		SendBehaviour sb = new SendBehaviour("The result is "+ result);
+		ProcessBehaviour behaviour = new ProcessBehaviour("The result is "+ result);
 		try {
-			JadeGateway.execute(sb);
+			JadeGateway.execute(behaviour);
 		} catch (StaleProxyException e) {
 			e.printStackTrace();
 		} catch (ControllerException e) {
@@ -71,7 +72,8 @@ public class AddNumbers extends HttpServlet {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		response.sendRedirect("index.jsp");
+		request.setAttribute("result", behaviour.getAnswer());
+		request.getRequestDispatcher("index.jsp").forward(request, response);
 	}
  
 	/**
@@ -96,5 +98,75 @@ public class AddNumbers extends HttpServlet {
 			myAgent.send(msg);
 		}
 		
+	}
+	
+	private class ProcessBehaviour extends Behaviour {
+		private boolean stop = false;
+		int step = 0;
+		String content;
+		String convId;
+		String answer;
+
+		public ProcessBehaviour(String content) {
+			super();
+			this.content = content;
+			convId = String.valueOf(System.currentTimeMillis());
+		}
+
+
+		public String getAnswer() {
+			return answer;
+		}
+
+		@Override
+		public void action() {
+			switch (step) {
+			case 0:
+				/*String perfs = (String) params.get(Constants.PERFORMATIVE);
+				String agent_id = (String) params.get(Constants.RECEIVER_NAME);
+				if (perfs != null && agent_id != null) {
+					int perf = Constants.PERFORMATIVES.get(perfs);
+					AID aid = new AID(agent_id,AID.ISLOCALNAME);
+					ACLMessage message = new ACLMessage(perf);
+					message.addReceiver(aid);
+					message.setContent((String) params.get(Constants.CONTENT));
+					message.setConversationId(convId);
+					myAgent.send(message);
+					System.out.println("ProcessBehaviour --> Message sent to: " + agent_id);
+					step = 1;
+				} else {
+					stopProcess(Status.CLIENT_ERROR_BAD_REQUEST, "No performative or no aid");
+				}*/
+				final ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+				AID receiver = new AID("Reception", false);
+				msg.addReceiver(receiver);
+				msg.setContent(content);
+				msg.setConversationId(convId);
+				myAgent.send(msg);
+				step = 1;
+				break;
+			case 1:
+				MessageTemplate mt = MessageTemplate.and(
+						MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+						MessageTemplate.MatchConversationId(convId));
+				ACLMessage answer = myAgent.receive(mt);
+				if (answer != null) {
+					stopProcess(convId + " - " + answer.getContent());
+				} else
+					block();
+				break;
+			}
+		}
+
+		private void stopProcess(String ans) {
+			answer = ans;
+			System.out.println(answer);
+			stop = true;
+		}
+
+		@Override
+		public boolean done() {
+			return stop;
+		}
 	}
 }

@@ -7,6 +7,18 @@
 <title>Insert title here</title>
 </head>
 <body>
+	<%! 
+	   String someOutput(Object obj) {
+	     return obj.toString();
+	  }
+	%>
+	<%
+		String s = "";
+		if(request.getAttribute("result") != null){
+			Object obj = request.getAttribute("result");
+			s = obj.toString();
+		}
+	%>
 	<form id=fr_add name=fr_add method=get action="AddNumbers">
 		A : <input type=text value="" name=a><br>
 		B : <input type=text value="" name=b><br>
@@ -16,7 +28,7 @@
 	<br/>
 	<br/>
 	<p>Response:</p>
-	<p id = "result"></p>
+	<p id = "result"><%=s %></p>
 
 </body>
 </html>

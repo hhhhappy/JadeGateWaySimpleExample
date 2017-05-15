@@ -27,6 +27,9 @@ public class ReceptAgent extends Agent {
 			if(message != null){
 				String s = message.getContent();
 				System.out.println(s);
+				ACLMessage reply = message.createReply();
+				reply.setContent(s + " received!");
+				send(reply);
 			}
 		}
 
