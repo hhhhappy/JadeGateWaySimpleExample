@@ -1,0 +1,3 @@
+main=true
+gui=true
+local-port=2000
