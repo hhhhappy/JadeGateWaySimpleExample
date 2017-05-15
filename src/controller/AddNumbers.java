@@ -38,11 +38,11 @@ public class AddNumbers extends HttpServlet {
         // TODO Auto-generated constructor stub
     }
     public void init(ServletConfig config) throws ServletException{
+    	//JadeGateway.init("agents.MyGateWayAgent", null);
     	Properties pp = new Properties();
     	pp.setProperty(Profile.MAIN_HOST, "localhost");
     	pp.setProperty(Profile.MAIN_PORT, "2000");
     	JadeGateway.init(null, pp);
-    	//JadeGateway.init("agents.MyGateWayAgent", null);
     }
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
